@@ -8,6 +8,23 @@ int main() {
     try {
         IloModel model(env);
 
+        // ------------------- Dados do enunciado -------------------
+        // Custos (R$ por litro)
+        const double custo_SolA = 1.5, custo_SolB = 1.0;
+        const double custo_SEC  = 4.0, custo_COR  = 6.0;
+
+        // Composicao das solucoes (fracao de SEC e de COR por litro)
+        const double SEC_em_SolA = 0.30, COR_em_SolA = 0.70;
+        const double SEC_em_SolB = 0.60, COR_em_SolB = 0.40;
+
+        // Volumes a produzir (litros)
+        const double vol_SR = 1000.0;
+        const double vol_SN = 250.0;
+
+        // Composicao minima exigida (fracao do volume da tinta)
+        const double min_SEC_SR = 0.25, min_COR_SR = 0.50;
+        const double min_SEC_SN = 0.20, min_COR_SN = 0.50;
+
         // Variáveis de decisão para a Tinta de Secagem Rápida (SR)
         IloNumVar xA_SR(env, 0, IloInfinity, ILOFLOAT, "SolA_SR");
         IloNumVar xB_SR(env, 0, IloInfinity, ILOFLOAT, "SolB_SR");
@@ -20,34 +37,34 @@ int main() {
         IloNumVar xSEC_SN(env, 0, IloInfinity, ILOFLOAT, "SEC_SN");
         IloNumVar xCOR_SN(env, 0, IloInfinity, ILOFLOAT, "COR_SN");
 
-        // Função Objetivo: Minimizar o Custo Total
-        // Custo = 1.5*(SolA) + 1.0*(SolB) + 4.0*(SEC) + 6.0*(COR)
+        // Função Objetivo: Minimizar o Custo Total de compra dos produtos
         IloExpr cost(env);
-        cost += 1.5 * (xA_SR + xA_SN);
-        cost += 1.0 * (xB_SR + xB_SN);
-        cost += 4.0 * (xSEC_SR + xSEC_SN);
-        cost += 6.0 * (xCOR_SR + xCOR_SN);
+        cost += custo_SolA * (xA_SR + xA_SN);
+        cost += custo_SolB * (xB_SR + xB_SN);
+        cost += custo_SEC  * (xSEC_SR + xSEC_SN);
+        cost += custo_COR  * (xCOR_SR + xCOR_SN);
         model.add(IloMinimize(env, cost));
 
-        // Restrição 1: Volume total da tinta SR deve ser 1000 litros
-        model.add(xA_SR + xB_SR + xSEC_SR + xCOR_SR == 1000);
+        // Restrição 1: Volume total da tinta SR
+        model.add(xA_SR + xB_SR + xSEC_SR + xCOR_SR == vol_SR);
 
-        // Restrição 2: Volume total da tinta SN deve ser 250 litros
-        model.add(xA_SN + xB_SN + xSEC_SN + xCOR_SN == 250);
+        // Restrição 2: Volume total da tinta SN
+        model.add(xA_SN + xB_SN + xSEC_SN + xCOR_SN == vol_SN);
 
-        // Restrição 3: SR tem que ter no mínimo 25% de SEC (0.25 * 1000 = 250 litros)
-        // A SolA fornece 30% de SEC, a SolB fornece 60% de SEC, o SEC puro fornece 100%
-        model.add(0.3 * xA_SR + 0.6 * xB_SR + 1.0 * xSEC_SR >= 250);
+        // Restrição 3: SR deve ter no mínimo min_SEC_SR de SEC.
+        // Cada litro de SolA fornece SEC_em_SolA de SEC, SolB fornece SEC_em_SolB,
+        // e o componente SEC puro fornece 1.0. Como o volume e fixo, a fracao
+        // minima vira litros: min_SEC_SR * vol_SR.
+        model.add(SEC_em_SolA * xA_SR + SEC_em_SolB * xB_SR + 1.0 * xSEC_SR >= min_SEC_SR * vol_SR);
 
-        // Restrição 4: SR tem que ter no mínimo 50% de COR (0.50 * 1000 = 500 litros)
-        // A SolA fornece 70% de COR, a SolB fornece 40% de COR, o COR puro fornece 100%
-        model.add(0.7 * xA_SR + 0.4 * xB_SR + 1.0 * xCOR_SR >= 500);
+        // Restrição 4: SR deve ter no mínimo min_COR_SR de COR
+        model.add(COR_em_SolA * xA_SR + COR_em_SolB * xB_SR + 1.0 * xCOR_SR >= min_COR_SR * vol_SR);
 
-        // Restrição 5: SN tem que ter no mínimo 20% de SEC (0.20 * 250 = 50 litros)
-        model.add(0.3 * xA_SN + 0.6 * xB_SN + 1.0 * xSEC_SN >= 50);
+        // Restrição 5: SN deve ter no mínimo min_SEC_SN de SEC
+        model.add(SEC_em_SolA * xA_SN + SEC_em_SolB * xB_SN + 1.0 * xSEC_SN >= min_SEC_SN * vol_SN);
 
-        // Restrição 6: SN tem que ter no mínimo 50% de COR (0.50 * 250 = 125 litros)
-        model.add(0.7 * xA_SN + 0.4 * xB_SN + 1.0 * xCOR_SN >= 125);
+        // Restrição 6: SN deve ter no mínimo min_COR_SN de COR
+        model.add(COR_em_SolA * xA_SN + COR_em_SolB * xB_SN + 1.0 * xCOR_SN >= min_COR_SN * vol_SN);
 
         // Resolver o modelo
         IloCplex cplex(model);
@@ -74,21 +91,4 @@ int main() {
             std::cout << "  SolA: " << cplex.getValue(xA_SR) << " L, SolB: " << cplex.getValue(xB_SR) 
                       << " L, SEC: " << cplex.getValue(xSEC_SR) << " L, COR: " << cplex.getValue(xCOR_SR) << " L" << std::endl;
 
-            std::cout << "\nDetalhes da Producao (Tinta SN - 250 L):" << std::endl;
-            std::cout << "  SolA: " << cplex.getValue(xA_SN) << " L, SolB: " << cplex.getValue(xB_SN) 
-                      << " L, SEC: " << cplex.getValue(xSEC_SN) << " L, COR: " << cplex.getValue(xCOR_SN) << " L" << std::endl;
-            std::cout << "-----------------------------------" << std::endl;
-
-        } else {
-            std::cout << "O solver nao conseguiu encontrar uma solucao otima." << std::endl;
-        }
-        
-    } catch (IloException& e) {
-        std::cerr << "Excecao CPLEX capturada: " << e << std::endl;
-    } catch (...) {
-        std::cerr << "Excecao desconhecida capturada." << std::endl;
-    }
-
-    env.end();
-    return 0;
-}
+            s

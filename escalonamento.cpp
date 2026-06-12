@@ -31,19 +31,19 @@ int main() {
         }
         model.add(IloMinimize(env, total_enfermeiras));
 
-        // Matriz de cobertura: cobertura[i][j] = 1 se uma enfermeira que começa no dia j trabalha no dia i.
-        // Escala do enunciado: Trabalha 4 dias consecutivos e descansa 3.
-        // Quem inicia no dia j cobre os dias j, j+1, j+2, j+3 (modulo 7).
-        int cobertura[7][7] = {
-            // j=0  j=1  j=2  j=3  j=4  j=5  j=6  (Dia de Início do turno)
-            {   1,   0,   0,   0,   1,   1,   1 }, // i=0 (Dia 1 da semana)
-            {   1,   1,   0,   0,   0,   1,   1 }, // i=1 (Dia 2 da semana)
-            {   1,   1,   1,   0,   0,   0,   1 }, // i=2 (Dia 3 da semana)
-            {   1,   1,   1,   1,   0,   0,   0 }, // i=3 (Dia 4 da semana)
-            {   0,   1,   1,   1,   1,   0,   0 }, // i=4 (Dia 5 da semana)
-            {   0,   0,   1,   1,   1,   1,   0 }, // i=5 (Dia 6 da semana)
-            {   0,   0,   0,   1,   1,   1,   1 }  // i=6 (Dia 7 da semana)
-        };
+        // Escala do enunciado: trabalha 4 dias consecutivos e descansa 3.
+        const int dias_trabalho = 4;
+
+        // Matriz de cobertura derivada da regra da escala:
+        // cobertura[i][j] = 1 se uma enfermeira que começa no dia j trabalha no dia i,
+        // ou seja, se i estiver entre j e j + dias_trabalho - 1 (modulo 7).
+        int cobertura[7][7];
+        for(int i = 0; i < num_dias; i++) {
+            for(int j = 0; j < num_dias; j++) {
+                int dist = ((i - j) % num_dias + num_dias) % num_dias;
+                cobertura[i][j] = (dist < dias_trabalho) ? 1 : 0;
+            }
+        }
 
         // Restrições de Demanda: Número de enfermeiras trabalhando no dia 'i' >= d[i]
         for(int i = 0; i < num_dias; i++) {

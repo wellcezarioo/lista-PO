@@ -8,31 +8,42 @@ int main() {
     try {
         IloModel model(env);
 
+        // ------------------- Dados do enunciado -------------------
+        // Precos de venda (R$ por unidade de racao)
+        const double preco_AMGS = 20.0;
+        const double preco_RE   = 30.0;
+
+        // Custos dos insumos (R$ por kg)
+        const double custo_carne  = 4.0;
+        const double custo_cereal = 1.0;
+
+        // Consumo de insumos por unidade de racao (kg)
+        const double cereal_AMGS = 5.0, carne_AMGS = 1.0;
+        const double cereal_RE   = 2.0, carne_RE   = 4.0;
+
+        // Disponibilidade de insumos (kg)
+        const double disp_carne  = 10000.0;
+        const double disp_cereal = 30000.0;
+
         // Variáveis de decisão (quantidades a produzir de AMGS e RE)
         // Podem ser contínuas (IloNumVar)
         IloNumVar AMGS(env, 0, IloInfinity, ILOFLOAT, "AMGS");
         IloNumVar RE(env, 0, IloInfinity, ILOFLOAT, "RE");
 
-        // Custos:
-        // Custo carne = 4, Custo cereal = 1
-        // Custo AMGS = (5kg cereal * 1) + (1kg carne * 4) = 5 + 4 = 9 reais
-        // Custo RE = (2kg cereal * 1) + (4kg carne * 4) = 2 + 16 = 18 reais
-        
-        // Lucro = Preco de venda - Custo
-        // Lucro AMGS = 20 - 9 = 11 reais
-        // Lucro RE = 30 - 18 = 12 reais
+        // Lucro unitario calculado a partir dos dados:
+        // lucro = preco de venda - custo dos insumos consumidos
+        const double lucro_AMGS = preco_AMGS - (cereal_AMGS * custo_cereal + carne_AMGS * custo_carne);
+        const double lucro_RE   = preco_RE   - (cereal_RE   * custo_cereal + carne_RE   * custo_carne);
 
         // Função Objetivo: Maximizar o lucro total
-        IloObjective obj = IloMaximize(env, 11 * AMGS + 12 * RE);
+        IloObjective obj = IloMaximize(env, lucro_AMGS * AMGS + lucro_RE * RE);
         model.add(obj);
 
         // Restrição 1: Limite de Carne
-        // AMGS usa 1kg, RE usa 4kg. Total disponível: 10.000 kg
-        model.add(1 * AMGS + 4 * RE <= 10000);
+        model.add(carne_AMGS * AMGS + carne_RE * RE <= disp_carne);
 
         // Restrição 2: Limite de Cereais
-        // AMGS usa 5kg, RE usa 2kg. Total disponível: 30.000 kg
-        model.add(5 * AMGS + 2 * RE <= 30000);
+        model.add(cereal_AMGS * AMGS + cereal_RE * RE <= disp_cereal);
 
         // Resolvendo
         IloCplex cplex(model);
@@ -40,19 +51,4 @@ int main() {
 
         if (cplex.solve()) {
             std::cout << "Status da Solucao: " << cplex.getStatus() << std::endl;
-            std::cout << "Lucro Maximo: R$ " << cplex.getObjValue() << std::endl;
-            std::cout << "Quantidade de AMGS: " << cplex.getValue(AMGS) << std::endl;
-            std::cout << "Quantidade de RE: " << cplex.getValue(RE) << std::endl;
-        } else {
-            std::cout << "Nao foi possivel resolver o problema." << std::endl;
-        }
-
-    } catch (IloException& e) {
-        std::cerr << "Excecao CPLEX: " << e << std::endl;
-    } catch (...) {
-        std::cerr << "Excecao desconhecida" << std::endl;
-    }
-
-    env.end();
-    return 0;
-}
+            std::cout << 
