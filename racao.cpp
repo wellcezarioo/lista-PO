@@ -51,4 +51,28 @@ int main() {
 
         if (cplex.solve()) {
             std::cout << "Status da Solucao: " << cplex.getStatus() << std::endl;
-            std::cout << 
+            std::cout << "Lucro Maximo Total: R$ " << cplex.getObjValue() << std::endl;
+            std::cout << "-----------------------------------" << std::endl;
+            std::cout << "Quantidade de AMGS: " << cplex.getValue(AMGS) << " unidades" << std::endl;
+            std::cout << "Quantidade de RE:   " << cplex.getValue(RE) << " unidades" << std::endl;
+            std::cout << "-----------------------------------" << std::endl;
+            std::cout << "Carne utilizada: "
+                      << carne_AMGS * cplex.getValue(AMGS) + carne_RE * cplex.getValue(RE)
+                      << " / " << disp_carne << " kg" << std::endl;
+            std::cout << "Cereal utilizado: "
+                      << cereal_AMGS * cplex.getValue(AMGS) + cereal_RE * cplex.getValue(RE)
+                      << " / " << disp_cereal << " kg" << std::endl;
+            std::cout << "-----------------------------------" << std::endl;
+        } else {
+            std::cout << "O solver nao conseguiu encontrar uma solucao otima." << std::endl;
+        }
+
+    } catch (IloException& e) {
+        std::cerr << "Excecao CPLEX capturada: " << e << std::endl;
+    } catch (...) {
+        std::cerr << "Excecao desconhecida capturada." << std::endl;
+    }
+
+    env.end();
+    return 0;
+}

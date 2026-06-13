@@ -31,8 +31,10 @@ int main() {
         }
         model.add(IloMinimize(env, total_enfermeiras));
 
-        // Escala do enunciado: trabalha 4 dias consecutivos e descansa 3.
-        const int dias_trabalho = 4;
+        // Escala do enunciado: trabalha 5 dias consecutivos e descansa 3.
+        const int dias_trabalho = 5;
+        const int dias_descanso = 3;
+        (void)dias_descanso;
 
         // Matriz de cobertura derivada da regra da escala:
         // cobertura[i][j] = 1 se uma enfermeira que começa no dia j trabalha no dia i,
@@ -67,7 +69,8 @@ int main() {
             std::cout << "-----------------------------------" << std::endl;
             std::cout << "Plano de Contratacao (Inicios de turno):" << std::endl;
             for(int i = 0; i < num_dias; i++) {
-                std::cout << "  Dia " << (i+1) << ": " << cplex.getValue(x[i]) << " enfermeira(s) iniciam o turno" << std::endl;
+                int inicio = static_cast<int>(cplex.getValue(x[i]) + 0.5);
+                std::cout << "  Dia " << (i+1) << ": " << inicio << " enfermeira(s) iniciam o turno" << std::endl;
             }
             std::cout << "-----------------------------------" << std::endl;
         } else {

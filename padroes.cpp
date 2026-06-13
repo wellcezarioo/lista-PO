@@ -19,15 +19,11 @@ int main() {
         const double custo_corpo  = 5.0;  // u por corpo nao utilizado
         const double custo_tampa  = 3.0;  // u por tampa nao utilizada
 
-        // Tempo maximo total de impressao
-        const double tempo_max = 100.0; // segundos
-
         // Dados de cada padrao de impressao (tabela do slide):
         //                       Padrao:   1    2    3    4
         std::vector<int>    tipo_folha = { 1,   2,   1,   1 };   // tam folha
         std::vector<double> corpos     = { 1.0, 2.0, 0.0, 4.0 }; // num corpo
         std::vector<double> tampas     = { 7.0, 3.0, 9.0, 4.0 }; // num tampa
-        std::vector<double> tempo      = { 2.0, 3.0, 2.0, 1.0 }; // tempo impressao (s)
 
         std::cout << "-----------------------------------" << std::endl;
         std::cout << "PROBLEMA DE PADROES (FABRICA DE LATINHAS)" << std::endl;
@@ -45,12 +41,11 @@ int main() {
 
         // ------------------- Expressoes auxiliares -------------------
         // Total de corpos e tampas produzidos pelos padroes escolhidos
-        IloExpr total_corpos(env), total_tampas(env), total_tempo(env);
+        IloExpr total_corpos(env), total_tampas(env);
         IloExpr folhas1_usadas(env), folhas2_usadas(env);
         for(int j = 0; j < num_padroes; j++) {
             total_corpos += corpos[j] * x[j];
             total_tampas += tampas[j] * x[j];
-            total_tempo  += tempo[j]  * x[j];
             if (tipo_folha[j] == 1) folhas1_usadas += x[j];
             else                    folhas2_usadas += x[j];
         }
@@ -75,9 +70,6 @@ int main() {
         // 3) Disponibilidade de folhas de cada tipo
         model.add(folhas1_usadas <= folhas_tipo1);
         model.add(folhas2_usadas <= folhas_tipo2);
-
-        // 4) Tempo total de impressao
-        model.add(total_tempo <= tempo_max);
 
         // ------------------- Solver -------------------
         IloCplex cplex(model);
@@ -104,7 +96,6 @@ int main() {
 
         total_corpos.end();
         total_tampas.end();
-        total_tempo.end();
         folhas1_usadas.end();
         folhas2_usadas.end();
         lucro.end();

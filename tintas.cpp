@@ -91,4 +91,22 @@ int main() {
             std::cout << "  SolA: " << cplex.getValue(xA_SR) << " L, SolB: " << cplex.getValue(xB_SR) 
                       << " L, SEC: " << cplex.getValue(xSEC_SR) << " L, COR: " << cplex.getValue(xCOR_SR) << " L" << std::endl;
 
-            s
+            std::cout << "\nDetalhes da Producao (Tinta SN - 250 L):" << std::endl;
+            std::cout << "  SolA: " << cplex.getValue(xA_SN) << " L, SolB: " << cplex.getValue(xB_SN)
+                      << " L, SEC: " << cplex.getValue(xSEC_SN) << " L, COR: " << cplex.getValue(xCOR_SN) << " L" << std::endl;
+            std::cout << "-----------------------------------" << std::endl;
+        } else {
+            std::cout << "O solver nao conseguiu encontrar uma solucao otima." << std::endl;
+        }
+
+        cost.end();
+
+    } catch (IloException& e) {
+        std::cerr << "Excecao CPLEX capturada: " << e << std::endl;
+    } catch (...) {
+        std::cerr << "Excecao desconhecida capturada." << std::endl;
+    }
+
+    env.end();
+    return 0;
+}

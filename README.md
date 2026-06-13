@@ -90,13 +90,11 @@ grafo trocável sem tocar no modelo. Ótimo da instância do slide: **13**
 **exemplo1**: PLI didático do slide (max 3x + 4y), variáveis `ILOINT`.
 
 **escalonamento**: escala de enfermeiras. x_j = quantas iniciam no dia j.
-Correção importante: a primeira versão usava a escala clássica "trabalha 5,
-folga 2", mas o enunciado do slide pede trabalha 4 dias consecutivos e
-descansa 3; os resultados das duas versões são diferentes. Escolha pontual: a
-matriz de cobertura 7x7 não é digitada à mão, e sim derivada da regra no
-próprio código (quem inicia no dia j cobre os dias j até j+3, módulo 7), com a
-constante `dias_trabalho = 4`. Assim a regra do enunciado aparece explícita e
-mudar a escala exige alterar um único número.
+O enunciado do slide pede 5 dias consecutivos de trabalho e 3 de descanso.
+A matriz de cobertura 7x7 nao e digitada a mao, e sim derivada da regra no
+proprio codigo (quem inicia no dia j cobre os dias j ate j+4, modulo 7), com a
+constante `dias_trabalho = 5`. Assim a regra do enunciado aparece explicita e
+mudar a escala exige alterar um unico numero.
 
 **cobertura**: localização de escolas, que é o problema do conjunto dominante
 mínimo. A matriz de adjacência inclui a diagonal (bairro atende a si mesmo);
@@ -115,7 +113,10 @@ conectados geram restrição.
 
 - Além de x_j (impressões do padrão j), criamos a variável inteira L (latinhas montadas), com L <= corpos e 2L <= tampas, pois cada lata usa 1 corpo e 2 tampas. Isso lineariza o "min(corpos, tampas/2)" implícito no enunciado.
 - Objetivo: 50L - 5(corpos - L) - 3(tampas - 2L), isto é, receita menos custo de estocagem das sobras, com receita e custos vindos das constantes do enunciado. O modelo decide o trade-off entre vender e estocar.
-- Ótimo verificado por força bruta: lucro 10.522 u, x = (0, 0, 23, 54), 211 latinhas, tempo de impressão esgotado (100 s).
+- Otimo verificado por forca bruta, sem uma restricao total de tempo adicional:
+lucro 35.250 u, x = (5, 90, 65, 130), 705 latinhas e sem sobra de corpos ou
+tampas. A linha de tempo de impressao da tabela nao entra no modelo porque o
+slide nao informa limite total nem custo associado ao tempo.
 
 **facilidades**: localização de facilidades não-capacitado (UFLP).
 Escolha pontual: usamos a restrição de ligação desagregada
@@ -123,5 +124,9 @@ Escolha pontual: usamos a restrição de ligação desagregada
 restrições, porém a relaxação linear é estritamente mais forte, o que tende a
 acelerar o branch-and-bound; é a formulação recomendada na literatura.
 
-**frequencia**: atribuição de frequências, que é coloração de grafos. x_ik
-(antena i usa frequência k), y_k (frequên
+**frequencia**: atribuicao de frequencias, que e coloracao de grafos. x_ik
+(antena i usa frequencia k), y_k (frequencia k e utilizada). Cada antena recebe
+exatamente uma frequencia; pares com interferencia nao podem compartilhar a
+mesma frequencia; e as restricoes x_ik <= y_k fazem a funcao objetivo contar
+apenas frequencias realmente usadas. Como no pior caso cada antena usa uma
+frequencia propria, K = n frequencias candidatas sao suficientes.

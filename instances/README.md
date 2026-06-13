@@ -19,7 +19,7 @@ Resultados ótimos esperados (verificados por enumeração exaustiva):
 
 | Instância        | Descrição                                   | Ótimo |
 |------------------|---------------------------------------------|-------|
-| escalonamento.txt| demandas 3 4 5 4 3 2 2 (4 dias on / 3 off)  | 6 enfermeiras |
+| escalonamento.txt| demandas 3 4 5 4 3 2 2 (5 dias on / 3 off)  | 5 enfermeiras |
 | cobertura.txt    | 6 bairros em "caminho"                      | 2 escolas (bairros 2 e 5) |
 | mochila.txt      | 5 itens, W = 10                             | valor 21 (itens 1, 2 e 5) |
 | clique.txt       | 6 vértices                                  | clique de tamanho 4 (1,2,3,4) |
